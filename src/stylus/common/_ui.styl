@@ -1,0 +1,39 @@
+/*-------------------------------------------------------------------------
+	UI
+/*-----------------------------------------------------------------------*/
+input, button, textarea, select {
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: none;
+	border-radius: 0;
+	outline: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+set-input-text() {
+	border: 2px solid getColor('border','gray');
+	border-radius: $radius;
+	background-color: transparent;
+	transition: border-color .15s ease-in-out, background-color .15s ease-in-out;
+	&:focus {
+		border-color: getColor('border','gray2');
+		background-color: #fcffdd;
+	}
+}
+
+set-button($color) {
+	min-width: 8em;
+	padding: .4em 1em .5em;
+	border-radius: $radius;
+	background-color: $color;
+	color: $white;
+	text-align: center;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out;
+	&:hover {
+		background-color: lighten($color,30);
+		color: $color;
+	}
+}

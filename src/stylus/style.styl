@@ -1,0 +1,84 @@
+@charset "UTF-8"; 
+
+/*-------------------------------------------------------------------------
+	Variable
+/*-----------------------------------------------------------------------*/
+$SW    = 640px;
+$white = #fff;
+$bg    = #273547;
+$radius = 3px;
+
+@import "common/_easing.styl";
+@import "common/_base.styl";
+@import "common/_ui.styl";
+@import "common/_layout.styl";
+
+/*-------------------------------------------------------------------------
+	Main
+/*-----------------------------------------------------------------------*/
+#all {
+	
+}
+
+#header {
+	margin-bottom: 1.6rem;
+	.inner {
+		padding: 1.6rem 0;
+		border-bottom: 1px solid rgba(255,255,255,0.1);
+	}
+	.title {
+		display: inline-block;
+		color: #a4bbd7;
+		font-size: 1.4rem;
+		font-weight: bold;
+	}
+	.version {
+		float: right;
+		margin-top: .4rem;
+		color: $white;
+		font-size: .8rem;
+	}
+}
+
+/*-------------------------------------------------------------------------
+	Main
+/*-----------------------------------------------------------------------*/
+.status-version {
+	color: #fff;
+	font-size: .8rem;
+}
+
+.status-modulelist {
+	width: 100%;
+	margin-top: -.5rem;
+	li {
+		display: block;
+		width: 100%;
+		margin-top: .5rem;
+		transition: background-color .15s ease-in-out;
+		&:after {
+			content:"";
+			display: block;
+			clear:both;
+			visibility:hidden;
+		}
+		&:hover {
+			background-color: rgba(255,255,255,.1);
+		}
+		&.head {
+			p {
+				font-weight: bold;
+			}
+		}
+		p {
+			float: left;
+			width: 25%;
+			color: #fff;
+			font-size: .8rem;
+			button {
+				cursor: pointer;
+				set-button(#546E7A);
+			}
+		}
+	}
+}
