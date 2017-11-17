@@ -1,104 +1,76 @@
 import * as $ from 'jquery';
 import Vue from 'vue';
-
 import Process = require('child_process');
-// /// <reference path="header.ts" />
-// let Header = require('header');
-// import Header = require("./Header");
-// import * as Header from './Header.ts';
+
+let _body   : Body;
+let _header : Header;
+let _modalwindow : Modalwindow;
 
 $(() => {
 
-	Modalwindow.init();
-	init();
+	_body = new Body();
+
+	_modalwindow = new Modalwindow();
+	_modalwindow.show();
+
+	_header = new Header();
+	new PackageList();
 
 });
 
-let init = () => {
+class Body {
 
-	$('#all').append('<header id="header"><div class="wrap"><div class="inner"><h1 class="title">npm manager</h1><p class="version">Version: {{ version }}</p></div></div></header>');
+	$all : JQuery;
+	
+	constructor() {
 
-	let head : Vue = new Vue({
-		el   : '#header',
-		data : { version:'loading' }
-	});
+		this.$all = $('#all');
 
-	Process.exec('npm -v', (err:any, stdout:String, stderr:any) => {
+	}
+	
+	public append($target:JQuery) {
 
-		head.$data.version = (err) ? '---' : stdout;
+		this.$all.append($target);
 
-	});
-
-	setPackagelist();
-
+	}
 }
 
-let setPackagelist = () => {
+class Header {
 
-	let mainHtml : string = '<section class="page" id="page-status">';
-	mainHtml += '<ul class="status-modulelist">';
-	mainHtml += '<li class="head">';
-	mainHtml += '<p class="name">Package Name</p>';
-	mainHtml += '<p class="version">Version</p>';
-	mainHtml += '<p class="update">Update</p>';
-	mainHtml += '<p class="uninstall">Uninstall</p>';
-	mainHtml += '</li>';
-	mainHtml += '<li v-for="package in packagelist">';
-	mainHtml += '<p class="name">{{package.name}}</p>';
-	mainHtml += '<p class="version">{{package.version}}</p>';
-	mainHtml += '<p class="update"><button v-if="package.isUpdate" v-on:click="onUpdate(package.name)">update</button><span v-else>-</span></p>';
-	mainHtml += '<p class="uninstall"><button v-on:click="onUninstall(package.name)">uninstall</button></p>';
-	mainHtml += '</li>';
-	mainHtml += '</ul>';
-	mainHtml += '</section>';
+	$parent : JQuery;
+	vHeader : Vue;
 
-	$('#all').append('<main id="main"><div class="wrap">' + mainHtml + '</div></main>');
-	let status : Vue = new Vue({
-		el   : '#page-status',
-		data : {
-			packagelist : [
-				{ name:'-',version:'-',isUpdate:false }
-			]
-		},
-		methods : {
-			onUpdate : (name:string) => {
-				console.log(name);
-			},
-			onUninstall : (name:string) => {
-				console.log(name);
-			}
-		}
-	});
+	constructor() {
 
-	Process.exec('npm ls --global=true --depth=0 --json=true', (err:any, stdout:any, stderr:any) => {
+		this.$parent = $(this.getHtml());
+		_body.append(this.$parent);
 
-		if (err) console.log(err);
+		this.vHeader = new Vue({
+			el   : '#header',
+			data : { version:'loading' }
+		});
 
-		let list : any = JSON.parse(stdout).dependencies;
-		var data : any = {};
+		this.setVersion();
+		
+	}
 
-		for (var key in list) {
-			data[key] = {
-				name     : key,
-				version  : list[key].version,
-				isUpdate : false
-			};
-		}
+	private getHtml():string {
 
-		setOuted(data);
+		let html:string = '<header id="header">';
+		html += '<div class="wrap">';
+		html += '<div class="inner">';
+		html += '<h1 class="title">npm manager</h1>';
+		html += '<p class="version">Version: {{ version }}</p>';
+		html += '</div></div></header>';
+		return html;
 
-	});
+	}
 
-	let setOuted = (data:any) => {
+	private setVersion():void {
 
-		Process.exec('npm outdated --global=true --json=true', (err:any, stdout:any, stderr:any) => {
+		Process.exec('npm -v', (err:any, stdout:String, stderr:any) => {
 
-			if (err) console.log(err);
-			let list : any = JSON.parse(stdout);
-			for (var key in list) {
-				data[key].isUpdate = true;
-			}
-			status.$data.packagelist = data;
+			this.vHeader.$data.version = (err) ? '---' : stdout;
 
 		});
 
@@ -106,37 +78,131 @@ let setPackagelist = () => {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 class Modalwindow {
 
-	greeting: string;
+	$parent : JQuery;
 
-	constructor(message: string) {
+	constructor() {
 
-		this.greeting = message;
+		$('body').append(this.getHtml());
+		this.$parent = $('#modalwindow');
+		
+	}
+
+	private getHtml():string {
+
+		let html = '<div id="modalwindow">';
+		html += '<div class="background">';
+		html += '<div class="content">';
+		html += '<p class="load-spinner"></p>';
+		html += '</div></div></div>';
+		return html;
 
 	}
 
-	private greet() {
+	public show():void {
 
-		return "Hello, " + this.greeting;
+		this.$parent.show();
 
 	}
 
-	public static init():void {
+	public hide():void {
 
-		// $('body').append('<div id="modalwindow"><div class="background"><section class="content"></section></div></div>');
+		this.$parent.fadeOut(200);
+
+	}
+
+}
+
+class PackageList {
+
+	$parent : JQuery;
+	vStatus : Vue;
+
+	constructor() {
+
+		this.$parent = $('<main id="main">' + this.getHtml() + '</div>');
+		_body.append(this.$parent);
+		
+		this.vStatus = new Vue({
+			el   : '#page-status',
+			data : {
+				packagelist : [ { name:'-',version:'-',isUpdate:false }
+				]
+			},
+			methods : {
+				onUpdate : (name:string) => {
+					console.log(name);
+				},
+				onUninstall : (name:string) => {
+					console.log(name);
+				}
+			}
+		});
+
+		this.setList();
+		
+	}
+
+	private getHtml():string {
+
+		let html : string = '<section class="page" id="page-status"><div class="wrap">';
+		html += '<ul class="status-modulelist">';
+		html += '<li class="head">';
+		html += '<p class="name">Package Name</p>';
+		html += '<p class="version">Version</p>';
+		html += '<p class="update">Update</p>';
+		html += '<p class="uninstall">Uninstall</p>';
+		html += '</li>';
+		html += '<li v-for="package in packagelist">';
+		html += '<p class="name">{{package.name}}</p>';
+		html += '<p class="version">{{package.version}}</p>';
+		html += '<p class="update"><button v-if="package.isUpdate" v-on:click="onUpdate(package.name)">update</button><span v-else>-</span></p>';
+		html += '<p class="uninstall"><button v-on:click="onUninstall(package.name)">uninstall</button></p>';
+		html += '</li>';
+		html += '</ul>';
+		html += '</div></section>';
+		return html;
+
+	}
+
+	private setList():void {
+
+		Process.exec('npm ls --global=true --depth=0 --json=true', (err:any, stdout:any, stderr:any) => {
+
+			if (err) console.log(err);
+
+			let list : any = JSON.parse(stdout).dependencies;
+			var data : any = {};
+
+			for (var key in list) {
+				data[key] = {
+					name     : key,
+					version  : list[key].version,
+					isUpdate : false
+				};
+			}
+
+			this.setOuted(data);
+
+		});
+
+	}
+
+	private setOuted(data:any) {
+
+		Process.exec('npm outdated --global=true --json=true', (err:any, stdout:any, stderr:any) => {
+
+			if (err) console.log(err);
+			let list : any = JSON.parse(stdout);
+			console.log(list);
+			for (var key in list) {
+				data[key].isUpdate = true;
+			}
+			this.vStatus.$data.packagelist = data;
+			_modalwindow.hide();
+
+		});
 
 	}
 

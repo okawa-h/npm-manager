@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "task:test": "electron ./",
+    "task:package": "electron-packager . npm-manager --platform=darwin --arch=x64 --icon=./product/icon.icns --version=0.1 --overwrite",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -23,6 +24,8 @@
     "webpack-stream": "^4.0.0"
   },
   "devDependencies": {
+    "electron-packager": "^9.1.0",
+    "electron-prebuilt": "^1.4.13",
     "ts-loader": "^3.1.1",
     "webpack": "^3.8.1",
     "webpack-node-externals": "^1.6.0"

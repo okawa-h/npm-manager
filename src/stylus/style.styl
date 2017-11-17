@@ -82,3 +82,72 @@ $radius = 3px;
 		}
 	}
 }
+
+/*-------------------------------------------------------------------------
+	Modalwindow
+/*-----------------------------------------------------------------------*/
+#modalwindow {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	.background {
+		display: table;
+		width: 100%;
+		height: 100%;
+		background-color: rgba($bg,.8);
+		text-align: center;
+		.content {
+			display: table-cell;
+			vertical-align: middle;
+		}
+	}
+	.load-spinner {
+		width: 50px;
+		height: 50px;
+	}
+}
+
+.load-spinner {
+	position: relative;
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	border: 2px solid transparent;
+	border-top-color: #0cf;
+	border-radius: 50%;
+	animation: spin 0.75s infinite linear;
+	&:before {
+		left: -2px;
+		top: -2px;
+		display: inline-block;
+		position: absolute;
+		content: '';
+		width: inherit;
+		height: inherit;
+		border: inherit;
+		border-color: transparent;
+		border-top-color: #0cf;
+		border-radius: inherit;
+		animation: spin 1.5s infinite ease;
+	}
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+
+
+
+
+
+
+

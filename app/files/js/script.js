@@ -291,92 +291,149 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var $ = __webpack_require__(3);
 var vue_1 = __webpack_require__(4);
 var Process = __webpack_require__(7);
+var _body;
+var _header;
+var _modalwindow;
 $(function () {
-    Modalwindow.init();
-    init();
+    Process.exec('which npm', function (err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+    });
+    _body = new Body();
+    _modalwindow = new Modalwindow();
+    _modalwindow.show();
+    _header = new Header();
+    new PackageList();
 });
-var init = function () {
-    $('#all').append('<header id="header"><div class="wrap"><div class="inner"><h1 class="title">npm manager</h1><p class="version">Version: {{ version }}</p></div></div></header>');
-    var head = new vue_1.default({
-        el: '#header',
-        data: { version: 'loading' }
-    });
-    Process.exec('npm -v', function (err, stdout, stderr) {
-        head.$data.version = (err) ? '---' : stdout;
-    });
-    setPackagelist();
-};
-var setPackagelist = function () {
-    var mainHtml = '<section class="page" id="page-status">';
-    mainHtml += '<ul class="status-modulelist">';
-    mainHtml += '<li class="head">';
-    mainHtml += '<p class="name">Package Name</p>';
-    mainHtml += '<p class="version">Version</p>';
-    mainHtml += '<p class="update">Update</p>';
-    mainHtml += '<p class="uninstall">Uninstall</p>';
-    mainHtml += '</li>';
-    mainHtml += '<li v-for="package in packagelist">';
-    mainHtml += '<p class="name">{{package.name}}</p>';
-    mainHtml += '<p class="version">{{package.version}}</p>';
-    mainHtml += '<p class="update"><button v-if="package.isUpdate" v-on:click="onUpdate(package.name)">update</button><span v-else>-</span></p>';
-    mainHtml += '<p class="uninstall"><button v-on:click="onUninstall(package.name)">uninstall</button></p>';
-    mainHtml += '</li>';
-    mainHtml += '</ul>';
-    mainHtml += '</section>';
-    $('#all').append('<main id="main"><div class="wrap">' + mainHtml + '</div></main>');
-    var status = new vue_1.default({
-        el: '#page-status',
-        data: {
-            packagelist: [
-                { name: '-', version: '-', isUpdate: false }
-            ]
-        },
-        methods: {
-            onUpdate: function (name) {
-                console.log(name);
+var Body = (function () {
+    function Body() {
+        this.$all = $('#all');
+    }
+    Body.prototype.append = function ($target) {
+        this.$all.append($target);
+    };
+    return Body;
+}());
+var Header = (function () {
+    function Header() {
+        this.$parent = $(this.getHtml());
+        _body.append(this.$parent);
+        this.vHeader = new vue_1.default({
+            el: '#header',
+            data: { version: 'loading' }
+        });
+        this.setVersion();
+    }
+    Header.prototype.getHtml = function () {
+        var html = '<header id="header">';
+        html += '<div class="wrap">';
+        html += '<div class="inner">';
+        html += '<h1 class="title">npm manager</h1>';
+        html += '<p class="version">Version: {{ version }}</p>';
+        html += '</div></div></header>';
+        return html;
+    };
+    Header.prototype.setVersion = function () {
+        var _this = this;
+        Process.exec('npm -v', function (err, stdout, stderr) {
+            _this.vHeader.$data.version = (err) ? '---' : stdout;
+        });
+    };
+    return Header;
+}());
+var Modalwindow = (function () {
+    function Modalwindow() {
+        $('body').append(this.getHtml());
+        this.$parent = $('#modalwindow');
+    }
+    Modalwindow.prototype.getHtml = function () {
+        var html = '<div id="modalwindow">';
+        html += '<div class="background">';
+        html += '<div class="content">';
+        html += '<p class="load-spinner"></p>';
+        html += '</div></div></div>';
+        return html;
+    };
+    Modalwindow.prototype.show = function () {
+        this.$parent.show();
+    };
+    Modalwindow.prototype.hide = function () {
+        this.$parent.fadeOut(200);
+    };
+    return Modalwindow;
+}());
+var PackageList = (function () {
+    function PackageList() {
+        this.$parent = $('<main id="main">' + this.getHtml() + '</div>');
+        _body.append(this.$parent);
+        this.vStatus = new vue_1.default({
+            el: '#page-status',
+            data: {
+                packagelist: [{ name: '-', version: '-', isUpdate: false }
+                ]
             },
-            onUninstall: function (name) {
-                console.log(name);
+            methods: {
+                onUpdate: function (name) {
+                    console.log(name);
+                },
+                onUninstall: function (name) {
+                    console.log(name);
+                }
             }
-        }
-    });
-    Process.exec('npm ls --global=true --depth=0 --json=true', function (err, stdout, stderr) {
-        if (err)
-            console.log(err);
-        var list = JSON.parse(stdout).dependencies;
-        var data = {};
-        for (var key in list) {
-            data[key] = {
-                name: key,
-                version: list[key].version,
-                isUpdate: false
-            };
-        }
-        setOuted(data);
-    });
-    var setOuted = function (data) {
+        });
+        this.setList();
+    }
+    PackageList.prototype.getHtml = function () {
+        var html = '<section class="page" id="page-status"><div class="wrap">';
+        html += '<ul class="status-modulelist">';
+        html += '<li class="head">';
+        html += '<p class="name">Package Name</p>';
+        html += '<p class="version">Version</p>';
+        html += '<p class="update">Update</p>';
+        html += '<p class="uninstall">Uninstall</p>';
+        html += '</li>';
+        html += '<li v-for="package in packagelist">';
+        html += '<p class="name">{{package.name}}</p>';
+        html += '<p class="version">{{package.version}}</p>';
+        html += '<p class="update"><button v-if="package.isUpdate" v-on:click="onUpdate(package.name)">update</button><span v-else>-</span></p>';
+        html += '<p class="uninstall"><button v-on:click="onUninstall(package.name)">uninstall</button></p>';
+        html += '</li>';
+        html += '</ul>';
+        html += '</div></section>';
+        return html;
+    };
+    PackageList.prototype.setList = function () {
+        var _this = this;
+        Process.exec('npm ls --global=true --depth=0 --json=true', function (err, stdout, stderr) {
+            if (err)
+                console.log(err);
+            var list = JSON.parse(stdout).dependencies;
+            var data = {};
+            for (var key in list) {
+                data[key] = {
+                    name: key,
+                    version: list[key].version,
+                    isUpdate: false
+                };
+            }
+            _this.setOuted(data);
+        });
+    };
+    PackageList.prototype.setOuted = function (data) {
+        var _this = this;
         Process.exec('npm outdated --global=true --json=true', function (err, stdout, stderr) {
             if (err)
                 console.log(err);
             var list = JSON.parse(stdout);
+            console.log(list);
             for (var key in list) {
                 data[key].isUpdate = true;
             }
-            status.$data.packagelist = data;
+            _this.vStatus.$data.packagelist = data;
+            _modalwindow.hide();
         });
     };
-};
-var Modalwindow = (function () {
-    function Modalwindow(message) {
-        this.greeting = message;
-    }
-    Modalwindow.prototype.greet = function () {
-        return "Hello, " + this.greeting;
-    };
-    Modalwindow.init = function () {
-        $('body').append('<div id="modalwindow"><div class="background"><section class="content"></section></div></div>');
-    };
-    return Modalwindow;
+    return PackageList;
 }());
 
 
