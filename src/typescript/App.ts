@@ -18,6 +18,94 @@ $(() => {
 
 });
 
+
+class NpmConnect {
+
+	static ENV_PATH : any = {
+		env: {'PATH':'/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin'}
+	}
+
+	constructor() {
+		
+	}
+
+	static getVersion(onloaded:(version:string)=>void):void {
+
+		this.exec('-v',[],(result:string) => {
+
+			onloaded(result);
+
+		});
+
+	}
+
+	static getList(onloaded:(listdata:string)=>void,isGlobal:boolean=false):void {
+
+		this.exec('ls',[
+
+			{ key:'global',value:isGlobal },
+			{ key:'depth' ,value:0 },
+			{ key:'json'  ,value:true }
+
+		],(result:string) => {
+
+			onloaded(JSON.parse(result));
+
+		});
+
+	}
+
+	static getOuted(onloaded:(listdata:string)=>void,isGlobal:boolean=false):void {
+
+		Process.exec('npm outdated --global=' + isGlobal + ' --json=true', this.ENV_PATH, (err:any, stdout:any, stderr:any) => {
+
+			onloaded(JSON.parse(stdout));
+
+		});
+
+		this.exec('outdated',[
+
+			{ key:'global',value:isGlobal },
+			{ key:'json'  ,value:true }
+			
+		],(result:string) => {
+
+			onloaded(JSON.parse(result));
+
+		});
+
+	}
+
+	static exec(command:string,param:{key:string,value:any}[],onloaded:any):void {
+
+		let query : string = NpmConnect.paramToQuery(param);
+
+		Process.exec(['npm',command,query].join(' '), this.ENV_PATH, (err:any, stdout:any, stderr:any) => {
+
+			let result : any = (err || err != null) ? err : stdout;
+			console.log(err);
+
+			onloaded(result);
+
+		});
+
+	}
+
+	static paramToQuery(param:{key:string,value:any}[]):string {
+
+		let query : string[] = [];
+
+		for (var i = 0; i < param.length; ++i) {
+			let obj : {key:string,value:any} = param[i];
+			query.push('--' + obj.key + '=' + obj.value);
+		}
+
+		return query.join(' ');
+
+	}
+
+}
+
 class Body {
 
 	$all : JQuery;
@@ -68,9 +156,9 @@ class Header {
 
 	private setVersion():void {
 
-		Process.exec('npm -v', (err:any, stdout:String, stderr:any) => {
+		NpmConnect.getVersion((version:string) => {
 
-			this.vHeader.$data.version = (err) ? '---' : stdout;
+			this.vHeader.$data.version = version;
 
 		});
 
@@ -125,17 +213,24 @@ class PackageList {
 		_body.append(this.$parent);
 		
 		this.vStatus = new Vue({
-			el   : '#page-status',
+			el   : '.status-modulelist',
 			data : {
-				packagelist : [ { name:'-',version:'-',isUpdate:false }
-				]
+				packagelist : [ { name:'-',version:'-',isUpdate:false } ]
 			},
 			methods : {
 				onUpdate : (name:string) => {
-					console.log(name);
+
+					if (confirm('Can I update ' + name + '?')) {
+						// code...
+					}
+
 				},
 				onUninstall : (name:string) => {
-					console.log(name);
+
+					if (confirm('Can I delete ' + name + '?')) {
+						// code...
+					}
+
 				}
 			}
 		});
@@ -146,7 +241,7 @@ class PackageList {
 
 	private getHtml():string {
 
-		let html : string = '<section class="page" id="page-status"><div class="wrap">';
+		let html : string = '<section class="page"><div class="wrap">';
 		html += '<ul class="status-modulelist">';
 		html += '<li class="head">';
 		html += '<p class="name">Package Name</p>';
@@ -168,11 +263,9 @@ class PackageList {
 
 	private setList():void {
 
-		Process.exec('npm ls --global=true --depth=0 --json=true', (err:any, stdout:any, stderr:any) => {
+		NpmConnect.getList((listdata:any) => {
 
-			if (err) console.log(err);
-
-			let list : any = JSON.parse(stdout).dependencies;
+			let list : any = listdata.dependencies;
 			var data : any = {};
 
 			for (var key in list) {
@@ -185,24 +278,21 @@ class PackageList {
 
 			this.setOuted(data);
 
-		});
+		},true);
 
 	}
 
 	private setOuted(data:any) {
 
-		Process.exec('npm outdated --global=true --json=true', (err:any, stdout:any, stderr:any) => {
+		NpmConnect.getOuted((listdata:any) => {
 
-			if (err) console.log(err);
-			let list : any = JSON.parse(stdout);
-			console.log(list);
-			for (var key in list) {
+			for (var key in listdata) {
 				data[key].isUpdate = true;
 			}
 			this.vStatus.$data.packagelist = data;
 			_modalwindow.hide();
 
-		});
+		},true);
 
 	}
 

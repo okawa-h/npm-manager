@@ -295,16 +295,63 @@ var _body;
 var _header;
 var _modalwindow;
 $(function () {
-    Process.exec('which npm', function (err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
-    });
     _body = new Body();
     _modalwindow = new Modalwindow();
     _modalwindow.show();
     _header = new Header();
     new PackageList();
 });
+var NpmConnect = (function () {
+    function NpmConnect() {
+    }
+    NpmConnect.getVersion = function (onloaded) {
+        this.exec('-v', [], function (result) {
+            onloaded(result);
+        });
+    };
+    NpmConnect.getList = function (onloaded, isGlobal) {
+        if (isGlobal === void 0) { isGlobal = false; }
+        this.exec('ls', [
+            { key: 'global', value: isGlobal },
+            { key: 'depth', value: 0 },
+            { key: 'json', value: true }
+        ], function (result) {
+            onloaded(JSON.parse(result));
+        });
+    };
+    NpmConnect.getOuted = function (onloaded, isGlobal) {
+        if (isGlobal === void 0) { isGlobal = false; }
+        Process.exec('npm outdated --global=' + isGlobal + ' --json=true', this.ENV_PATH, function (err, stdout, stderr) {
+            onloaded(JSON.parse(stdout));
+        });
+        this.exec('outdated', [
+            { key: 'global', value: isGlobal },
+            { key: 'json', value: true }
+        ], function (result) {
+            onloaded(JSON.parse(result));
+        });
+    };
+    NpmConnect.exec = function (command, param, onloaded) {
+        var query = NpmConnect.paramToQuery(param);
+        Process.exec(['npm', command, query].join(' '), this.ENV_PATH, function (err, stdout, stderr) {
+            var result = (err || err != null) ? err : stdout;
+            console.log(err);
+            onloaded(result);
+        });
+    };
+    NpmConnect.paramToQuery = function (param) {
+        var query = [];
+        for (var i = 0; i < param.length; ++i) {
+            var obj = param[i];
+            query.push('--' + obj.key + '=' + obj.value);
+        }
+        return query.join(' ');
+    };
+    NpmConnect.ENV_PATH = {
+        env: { 'PATH': '/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin' }
+    };
+    return NpmConnect;
+}());
 var Body = (function () {
     function Body() {
         this.$all = $('#all');
@@ -335,8 +382,8 @@ var Header = (function () {
     };
     Header.prototype.setVersion = function () {
         var _this = this;
-        Process.exec('npm -v', function (err, stdout, stderr) {
-            _this.vHeader.$data.version = (err) ? '---' : stdout;
+        NpmConnect.getVersion(function (version) {
+            _this.vHeader.$data.version = version;
         });
     };
     return Header;
@@ -367,24 +414,25 @@ var PackageList = (function () {
         this.$parent = $('<main id="main">' + this.getHtml() + '</div>');
         _body.append(this.$parent);
         this.vStatus = new vue_1.default({
-            el: '#page-status',
+            el: '.status-modulelist',
             data: {
-                packagelist: [{ name: '-', version: '-', isUpdate: false }
-                ]
+                packagelist: [{ name: '-', version: '-', isUpdate: false }]
             },
             methods: {
                 onUpdate: function (name) {
-                    console.log(name);
+                    if (confirm('Can I update ' + name + '?')) {
+                    }
                 },
                 onUninstall: function (name) {
-                    console.log(name);
+                    if (confirm('Can I delete ' + name + '?')) {
+                    }
                 }
             }
         });
         this.setList();
     }
     PackageList.prototype.getHtml = function () {
-        var html = '<section class="page" id="page-status"><div class="wrap">';
+        var html = '<section class="page"><div class="wrap">';
         html += '<ul class="status-modulelist">';
         html += '<li class="head">';
         html += '<p class="name">Package Name</p>';
@@ -404,10 +452,8 @@ var PackageList = (function () {
     };
     PackageList.prototype.setList = function () {
         var _this = this;
-        Process.exec('npm ls --global=true --depth=0 --json=true', function (err, stdout, stderr) {
-            if (err)
-                console.log(err);
-            var list = JSON.parse(stdout).dependencies;
+        NpmConnect.getList(function (listdata) {
+            var list = listdata.dependencies;
             var data = {};
             for (var key in list) {
                 data[key] = {
@@ -417,21 +463,17 @@ var PackageList = (function () {
                 };
             }
             _this.setOuted(data);
-        });
+        }, true);
     };
     PackageList.prototype.setOuted = function (data) {
         var _this = this;
-        Process.exec('npm outdated --global=true --json=true', function (err, stdout, stderr) {
-            if (err)
-                console.log(err);
-            var list = JSON.parse(stdout);
-            console.log(list);
-            for (var key in list) {
+        NpmConnect.getOuted(function (listdata) {
+            for (var key in listdata) {
                 data[key].isUpdate = true;
             }
             _this.vStatus.$data.packagelist = data;
             _modalwindow.hide();
-        });
+        }, true);
     };
     return PackageList;
 }());
