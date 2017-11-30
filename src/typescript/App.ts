@@ -8,6 +8,8 @@ let _modalwindow : Modalwindow;
 
 $(() => {
 
+	alert('It is still under development.');
+
 	_body = new Body();
 
 	_modalwindow = new Modalwindow();
@@ -63,16 +65,16 @@ class NpmConnect {
 
 		});
 
-		this.exec('outdated',[
+		// this.exec('outdated',[
 
-			{ key:'global',value:isGlobal },
-			{ key:'json'  ,value:true }
+		// 	{ key:'global',value:isGlobal },
+		// 	{ key:'json'  ,value:true }
 			
-		],(result:string) => {
+		// ],(result:string) => {
 
-			onloaded(JSON.parse(result));
+		// 	onloaded(JSON.parse(result));
 
-		});
+		// });
 
 	}
 
@@ -221,14 +223,14 @@ class PackageList {
 				onUpdate : (name:string) => {
 
 					if (confirm('Can I update ' + name + '?')) {
-						// code...
+						alert('I have not implemented it yet, sorry.');
 					}
 
 				},
 				onUninstall : (name:string) => {
 
 					if (confirm('Can I delete ' + name + '?')) {
-						// code...
+						alert('I have not implemented it yet, sorry.');
 					}
 
 				}

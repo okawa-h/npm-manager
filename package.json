@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "task:test": "electron ./",
-    "task:package": "electron-packager . npm-manager --platform=darwin --arch=x64 --icon=./product/icon.icns --version=0.1 --overwrite",
+    "task:package": "electron-packager . npm-manager --platform=darwin --arch=x64 --icon=./icon.icns --version=0.1 --overwrite",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

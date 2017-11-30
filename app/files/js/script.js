@@ -295,6 +295,7 @@ var _body;
 var _header;
 var _modalwindow;
 $(function () {
+    alert('It is still under development.');
     _body = new Body();
     _modalwindow = new Modalwindow();
     _modalwindow.show();
@@ -323,12 +324,6 @@ var NpmConnect = (function () {
         if (isGlobal === void 0) { isGlobal = false; }
         Process.exec('npm outdated --global=' + isGlobal + ' --json=true', this.ENV_PATH, function (err, stdout, stderr) {
             onloaded(JSON.parse(stdout));
-        });
-        this.exec('outdated', [
-            { key: 'global', value: isGlobal },
-            { key: 'json', value: true }
-        ], function (result) {
-            onloaded(JSON.parse(result));
         });
     };
     NpmConnect.exec = function (command, param, onloaded) {
@@ -421,10 +416,12 @@ var PackageList = (function () {
             methods: {
                 onUpdate: function (name) {
                     if (confirm('Can I update ' + name + '?')) {
+                        alert('I have not implemented it yet, sorry.');
                     }
                 },
                 onUninstall: function (name) {
                     if (confirm('Can I delete ' + name + '?')) {
+                        alert('I have not implemented it yet, sorry.');
                     }
                 }
             }
