@@ -11,16 +11,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/jquery": "^3.3.13",
-    "@types/node": "^8.10.35",
+    "@types/jquery": "^3.3.29",
+    "@types/node": "^8.10.42",
     "gulp": "^3.9.1",
     "gulp-notify": "^3.2.0",
-    "gulp-plumber": "^1.2.0",
+    "gulp-plumber": "^1.2.1",
     "gulp-stylus": "^2.7.0",
     "jquery": "^3.3.1",
     "run-sequence": "^2.2.1",
     "stylus": "^0.54.5",
-    "vue": "^2.5.17",
+    "vue": "^2.6.8",
     "webpack-stream": "^4.0.3"
   },
   "devDependencies": {
